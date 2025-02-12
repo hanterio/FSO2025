@@ -81,8 +81,8 @@ const App = () => {
   const poistaPerson = (id) => {
     console.log('poistetaan ' + id)
     const url = `http://localhost:3001/persons/${id}`
-//    const person = persons.find(p => p.id === id)
-    const confirmed = window.confirm('Poistetaanko varmasti?')    
+    const person = persons.find(p => p.id === id)
+    const confirmed = window.confirm(`Delete ${person.name}`)    
     if (!confirmed) {
       console.log("Peruttiin poisto")
       return  
