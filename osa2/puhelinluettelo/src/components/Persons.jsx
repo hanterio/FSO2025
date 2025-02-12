@@ -1,8 +1,7 @@
-const Persons = (props) => {
-    const suodatetut = props.persons.filter(person => person.name.toLowerCase().includes(props.newSearch.toLowerCase()))
+const Persons = (props) => {    
     return (
         <div>
-            {suodatetut.map(person => <div key={person.name}>{person.name} {person.number}</div>)}
+            {props.person.name} {props.person.number} <button onClick={props.poista}>delete</button>
         </div>
     )
 }

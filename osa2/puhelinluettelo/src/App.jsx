@@ -3,6 +3,7 @@ import axios from 'axios'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
+import palvelu from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
@@ -12,10 +13,11 @@ const App = () => {
   const [newSearch, setNewSearch] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+    palvelu
+      .getAll()
+      .then(initialPersons => {
+        console.log("Fetched persons:", initialPersons);
+        setPersons(initialPersons)
       })
   }, [])
   
@@ -25,11 +27,42 @@ const App = () => {
       name: newName,
       number: newNumber
     }
-
+    console.log("Persons list:", persons);
     const onkoNimi = persons.some(person => person.name === newName)
-    onkoNimi ? alert(`${newName} is already added to phonebook`) : setPersons(persons.concat(uusiNimi))
+    const korvataan = () => {
+      const nimi = persons.find(p => p.name === newName)
+      console.log('korvataan ' + nimi)
+      const url = `http://localhost:3001/persons/${nimi.id}`
+      const muutettu = {...nimi, number: newNumber}
+    
+      axios
+        .put(url, muutettu)
+        .then(response => {
+          setPersons(persons.map(person => person.name !== newName ? person : response.data))
+        })
+    }
+
+
+    if (onkoNimi) {
+      const korvaus = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)
+      if (!korvaus) {
+        return
+      }
+      korvataan()
+    } else {
+      palvelu
+      .lisays(uusiNimi)
+      .then(response => {
+        setPersons(persons.concat(response.data))
+      })
+  
+    }
+     
+      
     setNewName('')
     setNewNumber('')
+    
+
   }
 
   const handleNimenLisays = (tapahtuma) => {
@@ -42,6 +75,27 @@ const App = () => {
 
   const handleSearch = (tapahtuma) => {
     setNewSearch(tapahtuma.target.value)
+  }
+  const suodatetut = persons.filter(person => person.name.toLowerCase().includes(newSearch.toLowerCase()))
+
+  const poistaPerson = (id) => {
+    console.log('poistetaan ' + id)
+    const url = `http://localhost:3001/persons/${id}`
+//    const person = persons.find(p => p.id === id)
+    const confirmed = window.confirm('Poistetaanko varmasti?')    
+    if (!confirmed) {
+      console.log("Peruttiin poisto")
+      return  
+    }
+    palvelu
+      .poisto(id)
+      .then(response => {        
+        setPersons(persons.filter(p => p.id !== id))
+      })
+      .catch(error => {
+        console.log('fail')
+        alert(`the person was already deleted`)
+      })
   }
 
   return (
@@ -57,12 +111,15 @@ const App = () => {
         handlePuhLisays={handlePuhLisays}
       />
       <h3>Numbers</h3>
-        <Persons
-          persons={persons}
-          newSearch={newSearch}
+        {suodatetut.map(person =>
+          <Persons
+            key={person.name}  
+            person={person}
+            poista={() => poistaPerson(person.id)}
         />
+        )}
     </div>
-  )
+  ) 
 
 }
 
