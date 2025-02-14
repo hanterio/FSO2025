@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Filter from './components/Filter'
+import Notification from './components/Notification'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import palvelu from './services/persons'
@@ -11,6 +12,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
+  const [message, setMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     palvelu
@@ -38,6 +41,12 @@ const App = () => {
       axios
         .put(url, muutettu)
         .then(response => {
+          setMessage(
+            `Replaced the number of '${nimi.name}'`
+          )
+          setTimeout(() => {
+            setMessage(null)
+          }, 2000)
           setPersons(persons.map(person => person.name !== newName ? person : response.data))
         })
     }
@@ -53,6 +62,12 @@ const App = () => {
       palvelu
       .lisays(uusiNimi)
       .then(response => {
+        setMessage(
+          `Added '${uusiNimi.name}'`
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 2000)
         setPersons(persons.concat(response.data))
       })
   
@@ -89,19 +104,31 @@ const App = () => {
     }
     palvelu
       .poisto(id)
-      .then(response => {        
+      .then(response => {
+        setMessage(
+          `'${person.name}' deleted succesfully`
+        )
+        setTimeout(() => {
+          setMessage(null)
+        }, 2000)        
         setPersons(persons.filter(p => p.id !== id))
+
       })
       .catch(error => {
-        console.log('fail')
-        alert(`the person was already deleted`)
+        setErrorMessage(`Infromation of ${person.name} has already been removed from server`)
+        setTimeout(() => {
+          setErrorMessage(null)
+        }, 6000)
       })
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
-        <Filter value={newSearch} onChange={handleSearch}/>
+        <Notification
+          message={message || errorMessage}
+          classname={errorMessage ? 'errorMessage' : 'message'}/>
+        <Filter value={newSearch} onChange={handleSearch}/>        
       <h3>Add a new</h3>
       <PersonForm
         onSubmit={lisaaNimi}
