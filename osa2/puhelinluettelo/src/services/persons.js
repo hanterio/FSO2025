@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = 'http://localhost:3001/persons/'
+const baseUrl = '/api/persons/'
 
 const getAll = () => {
     const request = axios.get(baseUrl) 
@@ -11,8 +11,12 @@ const lisays = uusiNimi => {
     return axios.post(baseUrl, uusiNimi)
 }
 
+const korvaus = muutettuNumero => {
+    return axios.put(`${baseUrl}${muutettuNumero.id}`, muutettuNumero)
+}
+
 const poisto = id => {
     return axios.delete(`${baseUrl}${id}`)
 }
 
-export default {getAll, lisays, poisto}
+export default {getAll, lisays, poisto, korvaus}

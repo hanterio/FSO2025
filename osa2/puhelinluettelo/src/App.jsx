@@ -35,11 +35,10 @@ const App = () => {
     const korvataan = () => {
       const nimi = persons.find(p => p.name === newName)
       console.log('korvataan ' + nimi)
-      const url = `http://localhost:3001/persons/${nimi.id}`
       const muutettu = {...nimi, number: newNumber}
     
-      axios
-        .put(url, muutettu)
+      palvelu
+        .korvaus(muutettu)
         .then(response => {
           setMessage(
             `Replaced the number of '${nimi.name}'`
@@ -95,7 +94,6 @@ const App = () => {
 
   const poistaPerson = (id) => {
     console.log('poistetaan ' + id)
-    const url = `http://localhost:3001/persons/${id}`
     const person = persons.find(p => p.id === id)
     const confirmed = window.confirm(`Delete ${person.name}`)    
     if (!confirmed) {
